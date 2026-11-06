@@ -22,32 +22,35 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Setup NuGet & MSBuild
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2
+
+      - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
       - name: Restore NuGet Dependencies
-        shell: powershell
+        shell: cmd
         run: |
-          Write-Host "Restoring NuGet packages..."
-          if (Test-Path "dep\nuget\nuget.exe") {
-            & "dep\nuget\nuget.exe" restore OpenConsole.slnx -ErrorAction SilentlyContinue
-            & "dep\nuget\nuget.exe" restore dep\nuget\packages.config -PackagesDirectory packages -ErrorAction SilentlyContinue
-          } else {
-            nuget restore OpenConsole.slnx -ErrorAction SilentlyContinue
-          }
+          echo Restoring NuGet packages...
+          if exist dep\nuget\nuget.exe (
+            dep\nuget\nuget.exe restore OpenConsole.slnx || nuget restore OpenConsole.slnx
+            if exist dep\nuget\packages.config (
+              dep\nuget\nuget.exe restore dep\nuget\packages.config -PackagesDirectory packages || echo Nuget config restore finished
+            )
+          ) else (
+            nuget restore OpenConsole.slnx || echo Nuget restore finished
+          )
 
       - name: Apply Left Vertical Tabs Modification
         shell: powershell
         run: |
           Write-Host "Applying Left Vertical Tabs Layout Configuration..."
-          $patchApplied = $false
           if (Test-Path "patches/vertical-tabs.patch") {
-            try {
-              git apply --ignore-space-change --ignore-whitespace patches/vertical-tabs.patch
+            git apply --ignore-space-change --ignore-whitespace patches/vertical-tabs.patch 2>$null
+            if ($LASTEXITCODE -eq 0) {
               Write-Host "Git patch applied successfully!"
-              $patchApplied = $true
-            } catch {
-              Write-Host "Patch format skipped, injecting vertical tab settings directly..."
+            } else {
+              Write-Host "Patch format skipped or already applied."
             }
           }
           
