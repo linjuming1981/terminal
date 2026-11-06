@@ -42,25 +42,13 @@ jobs:
           )
 
       - name: Apply Left Vertical Tabs Modification
-        shell: powershell
+        shell: cmd
         run: |
-          Write-Host "Applying Left Vertical Tabs Layout Configuration..."
-          if (Test-Path "patches/vertical-tabs.patch") {
-            git apply --ignore-space-change --ignore-whitespace patches/vertical-tabs.patch 2>$null
-            if ($LASTEXITCODE -eq 0) {
-              Write-Host "Git patch applied successfully!"
-            } else {
-              Write-Host "Patch format skipped or already applied."
-            }
-          }
-          
-          # Inject Tab Position setting directly into default settings
-          if (Test-Path "src/cascadia/TerminalApp/Resources/defaults.json") {
-            $defaults = Get-Content "src/cascadia/TerminalApp/Resources/defaults.json" -Raw | ConvertFrom-Json
-            $defaults | Add-Member -NotePropertyName "tabPosition" -NotePropertyValue "left" -Force
-            $defaults | ConvertTo-Json -Depth 10 | Set-Content "src/cascadia/TerminalApp/Resources/defaults.json"
-            Write-Host "Injected tabPosition: left into defaults.json!"
-          }
+          echo Applying Left Vertical Tabs Layout Configuration...
+          if exist patches\vertical-tabs.patch (
+            git apply --ignore-space-change --ignore-whitespace patches\vertical-tabs.patch 2>NUL || echo Patch already applied or format skipped
+          )
+          powershell -Command "$defaultsPath = 'src/cascadia/TerminalApp/Resources/defaults.json'; if (Test-Path $defaultsPath) { $d = Get-Content $defaultsPath -Raw | ConvertFrom-Json; $d | Add-Member -NotePropertyName 'tabPosition' -NotePropertyValue 'left' -Force; $d | ConvertTo-Json -Depth 10 | Set-Content $defaultsPath; Write-Host 'Injected tabPosition: left into defaults.json!' }"
 
       - name: Build Windows Terminal (Release x64)
         shell: cmd
