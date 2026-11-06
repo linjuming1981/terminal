@@ -1,0 +1,4 @@
+{
+  "name": "Windows Terminal Web",
+  "description": "A feature-rich web edition of Microsoft Windows Terminal featuring multi-tab support, split panes, customizable profiles, color schemes, simulated shells (PowerShell, CMD, WSL/Ubuntu, Git Bash, Azure Shell), command palette, interactive tools, and JSON settings editor."
+}

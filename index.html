@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" class="dark h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/res/terminal/Terminal.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Windows Terminal Web</title>
+    <meta name="description" content="A feature-rich web edition of Microsoft Windows Terminal featuring multi-tab support, split panes, customizable profiles, color schemes, simulated shells, command palette, interactive tools, and JSON settings editor." />
+    <meta property="og:title" content="Windows Terminal Web" />
+    <meta property="og:description" content="A feature-rich web edition of Microsoft Windows Terminal featuring multi-tab support, split panes, customizable profiles, color schemes, simulated shells, command palette, interactive tools, and JSON settings editor." />
+    <!-- Cascadia Code and JetBrains Mono Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cascadia+Code:ital,wght@0,300..700;1,300..700&family=Cascadia+Mono:ital,wght@0,300..700;1,300..700&family=Fira+Code:wght@300..700&family=JetBrains+Mono:wght@300..800&family=Segoe+UI:wght@300;400;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body class="h-full bg-slate-950 text-slate-100 font-sans antialiased overflow-hidden select-none">
+    <div id="root" class="h-full w-full"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
