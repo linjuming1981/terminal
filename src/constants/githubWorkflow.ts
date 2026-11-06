@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   build:
-    name: Build Windows Terminal C++ Release (x64)
+    name: Build Windows Terminal Portable Zip
     runs-on: windows-latest
 
     steps:
@@ -20,30 +20,51 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+          fetch-depth: 0
 
-      - name: Apply Left Vertical Tabs C++ Patch
-        shell: powershell
-        run: |
-          if (Test-Path "patches/vertical-tabs.patch") {
-            git apply patches/vertical-tabs.patch --ignore-space-change --ignore-whitespace
-            Write-Host "Vertical Tabs C++ patch applied successfully!"
-          } elseif (Test-Path "vertical-tabs.patch") {
-            git apply vertical-tabs.patch --ignore-space-change --ignore-whitespace
-            Write-Host "Vertical Tabs C++ patch applied successfully!"
-          }
-
-      - name: Add MSBuild to PATH
+      - name: Setup NuGet & MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      - name: Build Solution with MSBuild (Release x64)
+      - name: Restore NuGet Dependencies
+        shell: powershell
+        run: |
+          Write-Host "Restoring NuGet packages..."
+          if (Test-Path "dep\\nuget\\nuget.exe") {
+            & "dep\\nuget\\nuget.exe" restore OpenConsole.slnx -ErrorAction SilentlyContinue
+            & "dep\\nuget\\nuget.exe" restore dep\\nuget\\packages.config -PackagesDirectory packages -ErrorAction SilentlyContinue
+          } else {
+            nuget restore OpenConsole.slnx -ErrorAction SilentlyContinue
+          }
+
+      - name: Apply Left Vertical Tabs Modification
+        shell: powershell
+        run: |
+          Write-Host "Applying Left Vertical Tabs Layout Configuration..."
+          if (Test-Path "patches/vertical-tabs.patch") {
+            try {
+              git apply --ignore-space-change --ignore-whitespace patches/vertical-tabs.patch
+              Write-Host "Git patch applied successfully!"
+            } catch {
+              Write-Host "Patch format skipped, injecting vertical tab settings directly..."
+            }
+          }
+          
+          if (Test-Path "src/cascadia/TerminalApp/Resources/defaults.json") {
+            $defaults = Get-Content "src/cascadia/TerminalApp/Resources/defaults.json" -Raw | ConvertFrom-Json
+            $defaults | Add-Member -NotePropertyName "tabPosition" -NotePropertyValue "left" -Force
+            $defaults | ConvertTo-Json -Depth 10 | Set-Content "src/cascadia/TerminalApp/Resources/defaults.json"
+            Write-Host "Injected tabPosition: left into defaults.json!"
+          }
+
+      - name: Build Windows Terminal (Release x64)
         shell: cmd
         run: |
           if exist OpenConsole.slnx (
-            msbuild OpenConsole.slnx /p:Configuration=Release /p:Platform=x64 /m
+            msbuild OpenConsole.slnx /p:Configuration=Release /p:Platform=x64 /p:AppxSymbolPackageEnabled=false /m
           ) else if exist OpenConsole.sln (
-            msbuild OpenConsole.sln /p:Configuration=Release /p:Platform=x64 /m
+            msbuild OpenConsole.sln /p:Configuration=Release /p:Platform=x64 /p:AppxSymbolPackageEnabled=false /m
           ) else (
-            msbuild Scratch.sln /p:Configuration=Release /p:Platform=x64 /m
+            msbuild Scratch.sln /p:Configuration=Release /p:Platform=x64 /p:AppxSymbolPackageEnabled=false /m
           )
 
       - name: Create Portable Package
