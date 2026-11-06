@@ -2,14 +2,16 @@ name: Build Portable Windows Terminal Release
 
 on:
   push:
-    branches: [ main, master ]
     tags:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
-    name: Build Windows Terminal C++ Release (x64)
+    name: Build Windows Terminal Portable Zip
     runs-on: windows-latest
 
     steps:

@@ -1,27 +1,16 @@
-name: Publish to WinGet
+name: Publish to WinGet (Disabled for Fork)
 
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
 
 env:
   REGEX: 'Microsoft\.WindowsTerminal(?:Preview)?_([\d.]+)_8wekyb3d8bbwe\.msixbundle$'
-  # winget-create will read the following environment variable to access the GitHub token needed for submitting a PR
-  # See https://aka.ms/winget-create-token
   WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_TOKEN }}
 
 jobs:
   publish:
-    runs-on: windows-latest # Action can only run on Windows
+    runs-on: windows-latest
     steps:
-      - name: Publish Windows Terminal ${{ github.event.release.prerelease && 'Preview' || 'Stable' }}
+      - name: Publish Windows Terminal Preview or Stable
         run: |
-          $assets = '${{ toJSON(github.event.release.assets) }}' | ConvertFrom-Json
-          $wingetRelevantAsset = $assets | Where-Object { $_.name -like '*.msixbundle' } | Select-Object -First 1
-          $regex = [Regex]::New($env:REGEX)
-          $version = $regex.Match($wingetRelevantAsset.name).Groups[1].Value
-
-          $wingetPackage = "Microsoft.WindowsTerminal${{ github.event.release.prerelease && '.Preview' || '' }}"
-
-          & curl.exe -JLO https://aka.ms/wingetcreate/latest
-          & .\wingetcreate.exe update $wingetPackage -s -v $version -u $wingetRelevantAsset.browser_download_url
+          Write-Host "Disabled for personal fork."
